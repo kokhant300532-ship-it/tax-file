@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Payment Confirmation Editor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Great+Vibes&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #2c3e50;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    /* Side Control Panel */
+    .control-panel {
+      width: 340px;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      max-height: 95vh;
+      overflow-y: auto;
+    }
+
+    .control-panel h2 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #0f2b5c;
+      border-bottom: 2px solid #d4af37;
+      padding-bottom: 5px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #d4af37;
+      margin: 15px 0 8px 0;
+      text-transform: uppercase;
+    }
+
+    .control-group {
+      margin-bottom: 12px;
+    }
+
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: bold;
+      color: #0f2b5c;
+      margin-bottom: 4px;
+    }
+
+    .control-group input[type="text"], 
+    .control-group select, 
+    .control-group textarea {
+      width: 100%;
+      padding: 8px;
+      font-size: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      outline: none;
+      color: #0f2b5c;
+    }
+
+    .control-group input[type="file"] {
+      font-size: 11px;
+      width: 100%;
+    }
+
+    .control-group input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* Outer Printable Canvas */
+    .document-container {
+      width: 600px;
+      background: #ffffff;
+      padding: 25px;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      color: #0f2b5c;
+    }
+
+    /* Decorative Double Border Frame */
+    .outer-border {
+      border: 2px solid #0f2b5c;
+      padding: 6px;
+      position: relative;
+    }
+
+    .inner-border {
+      border: 1.5px solid #d4af37;
+      padding: 20px 25px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Watermark styling */
+    .watermark-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.1s ease;
+    }
+
+    .watermark-text {
+      font-size: 45px;
+      font-weight: 700;
+      color: rgba(15, 43, 92, 0.08);
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .watermark-img {
+      max-width: none;
+      width: 354px;
+      opacity: 0.22;
+      object-fit: contain;
+    }
+
+    .content-layer {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Corner Squares Decorative Elements */
+    .corner-square {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #d4af37;
+      position: absolute;
+      background: white;
+      z-index: 2;
+    }
+    .top-left { top: -9px; left: -9px; }
+    .top-right { top: -9px; right: -9px; }
+    .bottom-left { bottom: -9px; left: -9px; }
+    .bottom-right { bottom: -9px; right: -9px; }
+
+    /* Header Banner */
+    .header-banner {
+      background-color: #cbb051;
+      color: #0f2b5c;
+      text-align: center;
+      padding: 8px 10px;
+      font-weight: bold;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 0;
+    }
+
+    /* Unified Logos Row */
+    .logos-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    .header-image-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+    }
+
+    .header-image-container img {
+      width: 100%;
+      max-height: none;
+      object-fit: contain;
+      display: block;
+      margin: 0;
+      padding: 0;
+      transition: width 0.1s ease;
+    }
+
+    /* Titles */
+    .title-gold {
+      color: #d4a017;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 5px;
+      margin-bottom: 4px;
+    }
+
+    .subtitle-gold {
+      color: #cbb051;
+      text-align: center;
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* Content Data Block */
+    .data-section {
+      margin-bottom: 20px;
+      font-size: 13.5px;
+      color: #0f2b5c;
+      line-height: 1.6;
+    }
+
+    .data-row {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .data-details {
+      display: grid;
+      grid-template-columns: 160px 10px 1fr;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    /* Red Text Styling for Highlighted Values */
+    .text-red {
+      color: #e53e3e !important;
+      font-weight: bold;
+    }
+
+    /* Legal Text Paragraph - Updated to Arial and Bold */
+    .legal-text {
+      font-family: Arial, sans-serif;
+      font-size: 11.5px;
+      font-weight: bold;
+      color: #0f2b5c;
+      text-align: justify;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* Highlight Box */
+    .highlight-box {
+      border: 1.5px solid #d4af37;
+      border-radius: 12px;
+      padding: 10px 15px;
+      text-align: center;
+      margin: 0 auto 15px auto;
+      width: 85%;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .highlight-box .main-msg {
+      font-weight: bold;
+      font-size: 12.5px;
+      color: #0f2b5c;
+      margin-bottom: 3px;
+    }
+
+    .highlight-box .sub-msg {
+      font-size: 11px;
+      color: #0f2b5c;
+      opacity: 0.9;
+    }
+
+    /* Footer Signatures and Stamp */
+    .footer-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 10px;
+      padding: 0 10px;
+    }
+
+    .signatures-group {
+      display: flex;
+      gap: 30px;
+      align-items: flex-end;
+    }
+
+    .sig-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sig-label {
+      font-size: 8.5px;
+      color: #0f2b5c;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .sig-script {
+      font-family: 'Great Vibes', cursive;
+      font-size: 26px;
+      color: #0f2b5c;
+    }
+
+    .divider-line {
+      width: 1px;
+      height: 45px;
+      background-color: #d4af37;
+    }
+
+    /* Seal Wrapper & Text Container */
+    .seal-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .seal-image-container {
+      width: 85px;
+      height: 85px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .seal-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.1s ease;
+    }
+
+    .seal-rfc-text {
+      margin-top: 4px;
+      font-size: 9.5px;
+      font-weight: bold;
+      color: #0f2b5c;
+      text-align: center;
+    }
+
+    @media print {
+      body {
+        background-color: white;
+        padding: 0;
+      }
+      .control-panel {
+        display: none;
+      }
+      .document-container {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="control-panel">
+  <h2>Live Control Settings</h2>
+  
+  <div class="section-title">Image Uploads & Controls</div>
+  <div class="control-group">
+    <label>Header Logos Image:</label>
+    <input type="file" id="upload-header-logos" accept="image/*">
+  </div>
+  <div class="control-group">
+    <label>Header Image Width: <span id="val-header-size">100%</span></label>
+    <input type="range" id="scale-header-logo" min="20" max="100" value="100">
+  </div>
+
+  <div class="control-group" style="margin-top: 15px;">
+    <label>Bottom Seal Image:</label>
+    <input type="file" id="upload-official-seal" accept="image/*">
+  </div>
+  <div class="control-group">
+    <label>Bottom Seal Size: <span id="val-seal-size">100%</span></label>
+    <input type="range" id="scale-seal-logo" min="30" max="200" value="100">
+  </div>
+
+  <div class="section-title">Watermark Controls</div>
+  <div class="control-group">
+    <label>Watermark Type:</label>
+    <select id="wm-type-select">
+      <option value="text">Text Watermark</option>
+      <option value="image" selected>Image Watermark</option>
+    </select>
+  </div>
+
+  <div id="wm-text-controls" style="display: none;">
+    <div class="control-group">
+      <label>Watermark Text:</label>
+      <input type="text" id="input-watermark" value="MERCADO LIBRE OFICIAL">
+    </div>
+    <div class="control-group">
+      <label>Font Size: <span id="val-wm-size">45px</span></label>
+      <input type="range" id="wm-size" min="20" max="90" value="45">
+    </div>
+  </div>
+
+  <div id="wm-image-controls">
+    <div class="control-group">
+      <label>Watermark Image File:</label>
+      <input type="file" id="upload-wm-image" accept="image/*">
+    </div>
+    <div class="control-group">
+      <label>Image Width: <span id="val-wm-img-width">354px</span></label>
+      <input type="range" id="wm-img-width" min="50" max="550" value="354">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label>Watermark Opacity: <span id="val-wm-opacity">0.22</span></label>
+    <input type="range" id="wm-opacity" min="0" max="1" step="0.01" value="0.22">
+  </div>
+  <div class="control-group">
+    <label>Rotation Angle: <span id="val-wm-angle">0°</span></label>
+    <input type="range" id="wm-angle" min="-180" max="180" value="0">
+  </div>
+
+  <div class="section-title">Red Text Variables</div>
+  <div class="control-group">
+    <label>Ingresos Personales:</label>
+    <input type="text" id="input-ingresos" value="2012424">
+  </div>
+
+  <div class="control-group">
+    <label>Contribuyente Name:</label>
+    <input type="text" id="input-contribuyente" value="Jose Abraham Ruiz Teran">
+  </div>
+
+  <div class="control-group">
+    <label>Impuestos por cobrar:</label>
+    <input type="text" id="input-impuestos" value="58.2541221">
+  </div>
+
+  <div class="control-group">
+    <label>Year (En XXXX):</label>
+    <input type="text" id="input-year" value="2026">
+  </div>
+
+  <div class="control-group">
+    <label>Percentage Rate:</label>
+    <input type="text" id="input-rate" value="35 %">
+  </div>
+
+  <div class="control-group">
+    <label>Threshold Amount:</label>
+    <input type="text" id="input-threshold" value="254,241">
+  </div>
+
+  <div class="section-title">Seal Footer Text</div>
+  <div class="control-group">
+    <label>Seal Below Text (RFC):</label>
+    <input type="text" id="input-seal-rfc" value="RFC:CEM991109KR2">
+  </div>
+</div>
+
+<div class="document-container">
+  <div class="outer-border">
+    <div class="corner-square top-left"></div>
+    <div class="corner-square top-right"></div>
+    <div class="corner-square bottom-left"></div>
+    <div class="corner-square bottom-right"></div>
+
+    <div class="inner-border">
+      
+      <div class="watermark-container" id="disp-watermark-container">
+        <div style="font-size:12px; color:#999;">[No Watermark Image Uploaded]</div>
+      </div>
+
+      <div class="content-layer">
+        <div class="header-banner" id="disp-header">
+          Departamento de Impuestos del Mercado Libre
+        </div>
+
+        <div class="logos-row">
+          <div class="header-image-container" id="disp-header-logos">
+            <svg id="default-header-svg" viewBox="0 0 500 50" style="width: 100%; max-height: 50px;">
+              <g transform="translate(10, 5)">
+                <rect width="90" height="40" fill="#ffe600"/>
+                <text x="12" y="24" font-family="Arial" font-weight="bold" font-size="14" fill="#0f2b5c">mercado</text>
+                <text x="12" y="34" font-family="Arial" font-style="italic" font-size="11" fill="#0f2b5c">libre</text>
+              </g>
+              <g transform="translate(160, 15)" font-family="Arial" text-anchor="middle">
+                <text x="0" y="12" font-weight="bold" font-size="13" fill="#0f2b5c">SHCP</text>
+                <text x="0" y="22" font-size="5" fill="#0f2b5c">SECRETARÍA DE HACIENDA Y CRÉDITO PÚBLICO</text>
+              </g>
+              <g transform="translate(290, 8)">
+                <circle cx="15" cy="15" r="15" fill="none" stroke="#0f2b5c" stroke-width="1"/>
+                <text x="15" y="18" font-family="Arial" font-size="8" text-anchor="middle" fill="#0f2b5c">SEAL</text>
+              </g>
+              <g transform="translate(380, 12)">
+                <circle cx="3" cy="3" r="2.5" fill="#0f2b5c"/>
+                <circle cx="10" cy="3" r="2.5" fill="#0f2b5c"/>
+                <circle cx="3" cy="10" r="2.5" fill="#0f2b5c"/>
+                <circle cx="10" cy="10" r="2.5" fill="#0f2b5c"/>
+                <text x="20" y="12" font-family="Arial" font-weight="bold" font-size="15" fill="#0f2b5c">SAT</text>
+                <text x="20" y="20" font-family="Arial" font-size="5" fill="#0f2b5c">Servicio de Administración Tributaria</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="title-gold" id="disp-title">Tax Payment Confirmation</div>
+        <div class="subtitle-gold" id="disp-subtitle">Informes fiscales proporcionados por Mercado Libre</div>
+
+        <div class="data-section">
+          <div class="data-row">
+            Monto de ingresos personales en Mercado Libre : <span id="disp-ingresos" class="text-red">2012424</span>
+          </div>
+          
+          <div class="data-details">
+            <div>Contribuyente</div>
+            <div>:</div>
+            <div id="disp-contribuyente" class="text-red">Jose Abraham Ruiz Teran</div>
+            
+            <div>Impuestos por cobrar</div>
+            <div>:</div>
+            <div id="disp-impuestos" class="text-red">58.2541221</div>
+          </div>
+        </div>
+
+        <div class="legal-text">
+          En <span id="disp-year" class="text-red">2026</span>, la tasa máxima del Impuesto sobre la Renta (ISR) para personas físicas en México es del <span id="disp-rate" class="text-red">35 %</span>. Todos los ingresos obtenidos a través de Mercado Libre deben declararse y, cuando corresponda, están sujetos al pago de impuestos, independientemente de su monto. Si el importe del retiro alcanza los <span id="disp-threshold" class="text-red">254,241</span> Pesos, se aplicará la tasa correspondiente conforme a la legislación fiscal vigente.
+        </div>
+
+        <div class="highlight-box">
+          <div class="main-msg">Todos los ciudadanos mexicanos eben pagar impuestos.</div>
+          <div class="sub-msg">Después de pagarlos, contacte a Mercado Libre para solicitar un reembolso.</div>
+        </div>
+
+        <div class="footer-section">
+          <div class="signatures-group">
+            
+            <div class="sig-block">
+              <div class="sig-label">Representante legal<br>(representante autorizado):</div>
+              <div class="sig-script">Marcos Galperin</div>
+            </div>
+
+            <div class="divider-line"></div>
+
+            <div class="sig-block">
+              <div class="sig-label" style="margin-bottom: 14px;">Sincerely.</div>
+              <div class="sig-script">Mercado Libre</div>
+            </div>
+
+          </div>
+
+          <div class="seal-wrapper">
+            <div class="seal-image-container" id="disp-official-seal">
+              <svg id="default-seal-svg" viewBox="0 0 100 100" width="85" height="85">
+                <circle cx="50" cy="50" r="46" fill="none" stroke="#0f2b5c" stroke-width="2" stroke-dasharray="1,1"/>
+                <circle cx="50" cy="50" r="43" fill="none" stroke="#0f2b5c" stroke-width="1.5"/>
+                <circle cx="50" cy="50" r="37" fill="none" stroke="#0f2b5c" stroke-width="1"/>
+                <path id="textPathTop" fill="none" d="M 20,50 A 30,30 0 0,1 80,50" />
+                <text font-size="6.5" font-family="Arial" font-weight="bold" fill="#0f2b5c">
+                  <textPath href="#textPathTop" startOffset="50%" text-anchor="middle">MERCADO LIBRE</textPath>
+                </text>
+                <text x="50" y="54" font-size="16" text-anchor="middle">🤝</text>
+                <path id="textPathBottom" fill="none" d="M 80,50 A 30,30 0 0,1 20,50" />
+                <text font-size="5.5" font-family="Arial" font-weight="bold" fill="#0f2b5c">
+                  <textPath href="#textPathBottom" startOffset="50%" text-anchor="middle">DEPARTAMENTO DE FINANZAS</textPath>
+                </text>
+              </svg>
+            </div>
+            <div class="seal-rfc-text" id="disp-seal-rfc">RFC:CEM991109KR2</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Function to bind text input changes to elements
+  function bindInputToElement(inputId, elementId) {
+    const input = document.getElementById(inputId);
+    const element = document.getElementById(elementId);
+    
+    if(input && element) {
+      input.addEventListener('input', function() {
+        element.textContent = this.value;
+      });
+    }
+  }
+
+  // Setup text bindings
+  bindInputToElement('input-ingresos', 'disp-ingresos');
+  bindInputToElement('input-contribuyente', 'disp-contribuyente');
+  bindInputToElement('input-impuestos', 'disp-impuestos');
+  bindInputToElement('input-year', 'disp-year');
+  bindInputToElement('input-rate', 'disp-rate');
+  bindInputToElement('input-threshold', 'disp-threshold');
+  bindInputToElement('input-seal-rfc', 'disp-seal-rfc');
+
+  // Watermark Elements
+  const wmTypeSelect = document.getElementById('wm-type-select');
+  const wmTextControls = document.getElementById('wm-text-controls');
+  const wmImageControls = document.getElementById('wm-image-controls');
+  const wmContainer = document.getElementById('disp-watermark-container');
+
+  const inputWmText = document.getElementById('input-watermark');
+  const wmSizeInput = document.getElementById('wm-size');
+  const valWmSize = document.getElementById('val-wm-size');
+
+  const uploadWmImage = document.getElementById('upload-wm-image');
+  const wmImgWidthInput = document.getElementById('wm-img-width');
+  const valWmImgWidth = document.getElementById('val-wm-img-width');
+
+  const wmOpacityInput = document.getElementById('wm-opacity');
+  const valWmOpacity = document.getElementById('val-wm-opacity');
+  const wmAngleInput = document.getElementById('wm-angle');
+  const valWmAngle = document.getElementById('val-wm-angle');
+
+  let uploadedWmImgSrc = '';
+
+  // Switch between Text & Image Watermark
+  wmTypeSelect.addEventListener('change', function() {
+    if (this.value === 'text') {
+      wmTextControls.style.display = 'block';
+      wmImageControls.style.display = 'none';
+      renderTextWatermark();
+    } else {
+      wmTextControls.style.display = 'none';
+      wmImageControls.style.display = 'block';
+      renderImageWatermark();
+    }
+  });
+
+  function renderTextWatermark() {
+    wmContainer.innerHTML = `<div class="watermark-text" id="disp-watermark">${inputWmText.value}</div>`;
+    updateWatermarkStyles();
+  }
+
+  function renderImageWatermark() {
+    if (uploadedWmImgSrc) {
+      wmContainer.innerHTML = `<img src="${uploadedWmImgSrc}" class="watermark-img" id="disp-wm-img" alt="Watermark Image">`;
+    } else {
+      wmContainer.innerHTML = `<div style="font-size:12px; color:#999;">[No Watermark Image Uploaded]</div>`;
+    }
+    updateWatermarkStyles();
+  }
+
+  // Update Text Watermark Content
+  inputWmText.addEventListener('input', function() {
+    if (wmTypeSelect.value === 'text') {
+      const wmTextEl = document.getElementById('disp-watermark');
+      if (wmTextEl) wmTextEl.textContent = this.value;
+    }
+  });
+
+  // Handle Watermark Image Upload
+  uploadWmImage.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        uploadedWmImgSrc = event.target.result;
+        if (wmTypeSelect.value === 'image') {
+          renderImageWatermark();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Update Transformations (Opacity, Angle, Font Size, Image Width)
+  function updateWatermarkStyles() {
+    const opacity = wmOpacityInput.value;
+    const angle = wmAngleInput.value;
+    
+    valWmOpacity.textContent = opacity;
+    valWmAngle.textContent = `${angle}°`;
+
+    wmContainer.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
+    if (wmTypeSelect.value === 'text') {
+      const textEl = document.getElementById('disp-watermark');
+      const fontSize = wmSizeInput.value;
+      valWmSize.textContent = `${fontSize}px`;
+      if (textEl) {
+        textEl.style.fontSize = `${fontSize}px`;
+        textEl.style.color = `rgba(15, 43, 92, ${opacity})`;
+      }
+    } else {
+      const imgEl = document.getElementById('disp-wm-img');
+      const imgWidth = wmImgWidthInput.value;
+      valWmImgWidth.textContent = `${imgWidth}px`;
+      if (imgEl) {
+        imgEl.style.width = `${imgWidth}px`;
+        imgEl.style.opacity = opacity;
+      }
+    }
+  }
+
+  wmOpacityInput.addEventListener('input', updateWatermarkStyles);
+  wmAngleInput.addEventListener('input', updateWatermarkStyles);
+  wmSizeInput.addEventListener('input', updateWatermarkStyles);
+  wmImgWidthInput.addEventListener('input', updateWatermarkStyles);
+
+  // Header Logo and Seal Image Handling
+  function setupImageControl(fileInputId, targetContainerId, scaleInputId, valueLabelId) {
+    const fileInput = document.getElementById(fileInputId);
+    const container = document.getElementById(targetContainerId);
+    const scaleInput = document.getElementById(scaleInputId);
+    const valueLabel = document.getElementById(valueLabelId);
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          container.innerHTML = `<img src="${event.target.result}" id="img-${targetContainerId}" alt="Uploaded Image">`;
+          applyScale();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function applyScale() {
+      const scaleVal = scaleInput.value;
+      valueLabel.textContent = `${scaleVal}%`;
+      
+      const img = container.querySelector('img');
+      const svg = container.querySelector('svg');
+      
+      if (fileInputId === 'upload-header-logos') {
+        if (img) img.style.width = `${scaleVal}%`;
+        if (svg) svg.style.width = `${scaleVal}%`;
+      } else if (fileInputId === 'upload-official-seal') {
+        const scaleFactor = scaleVal / 100;
+        if (img) img.style.transform = `scale(${scaleFactor})`;
+        if (svg) svg.style.transform = `scale(${scaleFactor})`;
+      }
+    }
+
+    scaleInput.addEventListener('input', applyScale);
+  }
+
+  setupImageControl('upload-header-logos', 'disp-header-logos', 'scale-header-logo', 'val-header-size');
+  setupImageControl('upload-official-seal', 'disp-official-seal', 'scale-seal-logo', 'val-seal-size');
+</script>
+
+</body>
+</html>
